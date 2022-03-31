@@ -28,6 +28,11 @@ Controller::Controller()
     connect(worker, &Worker::progress,
             this, &Controller::print_progress);
 
+    connect(this, &Controller::stop_thread,
+            &workerThread, [=](i){
+                workerThread.deleteLater();
+            });
+
 //    connect(worker, &Worker::progress,
 //            this, &Controller::SignalForwardResult);
 

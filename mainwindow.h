@@ -60,6 +60,7 @@ private slots:
     void UpdateText(const QPointF &);
     void exitMenu();
     void start_measure();
+    void stop_acquisition();
 
 };
 #endif // MAINWINDOW_H

@@ -23,6 +23,7 @@ public slots:
 signals:
     void operate(const QString &);
     void recv_a_point(const QPointF &);
+    void stop_thread(const QString &);
 
 
 };

@@ -36,6 +36,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton, SIGNAL(clicked(bool)),
             this, SLOT(start_measure()));
 
+    connect(ui->pushButton_2, SIGNAL(clicked(bool)),
+            this, SLOT(stop_acquisition()));
+
     // Initialize chart and put it in the gridLayout
 
     view = new QChartView();
@@ -102,4 +105,8 @@ void MainWindow::UpdateText(const QPointF &p){
 
 }
 
+void MainWindow::stop_acquisition(){
+    QString *message = new QString("Stop Thread");
+    emit mpController->stop_thread(*message);
+}
 
