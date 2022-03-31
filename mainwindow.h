@@ -22,6 +22,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QPointF>
 
 class Controller;
 
@@ -51,12 +52,12 @@ private:
     // Threads splitting to avoid
     // not-responding status of the
     // main interface
-    QThread *thread_measure;
-    std::unique_ptr<Controller> mpController;
+    //std::unique_ptr<Controller> mpController;
+    Controller *mpController;
 
 
 private slots:
-    void UpdateText(int i);
+    void UpdateText(const QPointF &);
     void exitMenu();
     void start_measure();
 

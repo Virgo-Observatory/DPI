@@ -8,6 +8,8 @@
 // Qt includes
 #include <QtCharts/QScatterSeries>
 #include <QtCharts/QSplineSeries>
+#include <QValueAxis>
+#include <QPointF>
 #include <QRandomGenerator>
 #include <iostream>
 #include <QThreadPool>
@@ -17,16 +19,15 @@
 
 MainWindow::MainWindow(QWidget *parent) :
             QMainWindow(parent),
-            ui(new Ui::MainWindow),
-            mpController(std::make_unique<Controller>())
+            ui(new Ui::MainWindow)
 {
-    static double xMin = 0;
-    static double xMax = 10;
+
+    mpController = new Controller();
 
     // Initialize the main windows interface
     ui->setupUi(this);
 
-    connect(mpController, &Controller::SignalForwardResult,
+    connect(mpController, &Controller::recv_a_point,
             this, &MainWindow::UpdateText);
 
     connect(ui->actionExit, SIGNAL(triggered(bool)),
@@ -35,24 +36,15 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton, SIGNAL(clicked(bool)),
             this, SLOT(start_measure()));
 
-
-
     // Initialize chart and put it in the gridLayout
-    measure = new QScatterSeries();
-    spline_m = new QSplineSeries();
+
     view = new QChartView();
     char1 = new QChart();
+    char1->setAnimationOptions(QChart::SeriesAnimations);
 
-    measure->setName("Points");
-    spline_m->setName("Spline");
-    char1->addSeries(measure);
-    char1->addSeries(spline_m);
-    char1->createDefaultAxes();
     view->setChart(char1);
 
     ui->gridLayout->addWidget(view, 1, 1);
-
-
 
 }
 
@@ -69,35 +61,45 @@ void MainWindow::exitMenu()
 
 void MainWindow::start_measure(){
 
+    measure = new QScatterSeries();
+    spline_m = new QSplineSeries();
+
+    measure->setName("Points");
+    spline_m->setName("Spline");
+
+    char1->addSeries(measure);
+    char1->addSeries(spline_m);
+    char1->createDefaultAxes();
+
+    char1->axisY()->setRange(0, 2.5);
+
     std::cout << "Satrt the measure thread " << std::endl;
     QString *s = new QString("New Thread");
     emit mpController->operate(*s);
 
+    static double xMin = 0;
+    static double xMax = 0;
+    static double yMin = 0;
+    static double yMax = 0;
+
+    connect(measure, &QScatterSeries::pointAdded,
+            this, [=](int index){
+        double x = measure->at(index).x();
+        if(x < xMin || x > xMax){
+            if(x < xMin) xMin = x;
+            if(x > xMax) xMax = x;
+            char1->axisX()->setRange(xMin-5, xMax+5);
+        }
+    });
 }
 
-void MainWindow::UpdateText(int i){
-    ui->textEdit->setText(QString::number(i));
+void MainWindow::UpdateText(const QPointF &p){
+
+    ui->label_2->setText(QString::number(p.y()));
+    measure->append(p);
+    spline_m->append(p);
+    view->update();
+
 }
-
-
-
-
-
-
-//mainwindow.cpp:34:5: error: no matching member function for call to 'connect'
-//qobject.h:217:43: note: candidate function [with Func1 = void (Controller::*)(const QString &), Func2 = void (MainWindow::*)()] not viable: no known conversion from 'std::unique_ptr<Controller>' to 'const typename QtPrivate::FunctionPointer<void (Controller::*)(const QString &)>::Object *' (aka 'const Controller *') for 1st argument
-//qobject.h:197:36: note: candidate function not viable: no known conversion from 'std::unique_ptr<Controller>' to 'const QObject *' for 1st argument
-//qobject.h:200:36: note: candidate function not viable: no known conversion from 'std::unique_ptr<Controller>' to 'const QObject *' for 1st argument
-//qobject.h:443:41: note: candidate function not viable: no known conversion from 'std::unique_ptr<Controller>' to 'const QObject *' for 1st argument
-//qobject.h:258:13: note: candidate template ignored: requirement '!QtPrivate::FunctionPointer<void (MainWindow::*)()>::IsPointerToMemberFunction' was not satisfied [with Func1 = void (Controller::*)(const QString &), Func2 = void (MainWindow::*)()]
-//qobject.h:297:13: note: candidate template ignored: requirement 'QtPrivate::FunctionPointer<void (MainWindow::*)()>::ArgumentCount == -1' was not satisfied [with Func1 = void (Controller::*)(const QString &), Func2 = void (MainWindow::*)()]
-//qobject.h:249:13: note: candidate function template not viable: requires 3 arguments, but 4 were provided
-//qobject.h:289:13: note: candidate function template not viable: requires 3 arguments, but 4 were provided
-
-
-
-
-
-
 
 

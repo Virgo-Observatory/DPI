@@ -13,14 +13,24 @@ Controller::Controller()
 
     worker->moveToThread(&workerThread);
 
-    connect(worker, &Worker::progress,
-            this, &Controller::SignalForwardResult);
+    connect(&workerThread, &QThread::finished,
+            &workerThread, &QThread::quit);
 
     connect(&workerThread, &QThread::finished,
-            worker, &QObject::deleteLater );
+            this, &QObject::deleteLater);
 
     connect(this, &Controller::operate,
             worker, &Worker::doWork);
+
+    connect(worker, &Worker::resultReady,
+            this, &Controller::handleResults);
+
+    connect(worker, &Worker::progress,
+            this, &Controller::print_progress);
+
+//    connect(worker, &Worker::progress,
+//            this, &Controller::SignalForwardResult);
+
 
     workerThread.start();
 
@@ -34,7 +44,12 @@ Controller::~Controller()
 
 }
 
-//void Controller::handleResults(const QString &n)
-//{
-//    // how do I update the mainWindow from here
-//}
+void Controller::print_progress(const QPointF &point)
+{
+    emit recv_a_point(point);
+}
+
+void Controller::handleResults(const QString &n)
+{
+    std::cout << "The results are handled" << std::endl;
+}

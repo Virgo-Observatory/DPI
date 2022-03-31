@@ -4,6 +4,7 @@
 #pragma once
 #include <QThread>
 #include <QObject>
+#include <QPointF>
 
 class Controller : public QObject
 {
@@ -14,10 +15,14 @@ public:
     Controller();
     ~Controller();
 
+public slots:
+    void handleResults(const QString &);
+    void print_progress(const QPointF &);
+
 
 signals:
     void operate(const QString &);
-    void SignalForwardResult(const QString &);
+    void recv_a_point(const QPointF &);
 
 
 };

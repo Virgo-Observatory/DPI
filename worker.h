@@ -2,6 +2,7 @@
 #define WORKER_H
 
 #include <QObject>
+#include <QPointF>
 
 class Worker : public QObject
 {
@@ -11,7 +12,7 @@ public slots:
     void doWork(const QString &parameter);
 
 signals:
-    void progress(const QString);
+    void progress(const QPointF &r);
     void resultReady(const QString &result);
 
 };
